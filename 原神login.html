@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="http://at.alicdn.com/t/c/font_4264209_1rkr8e6bzmij.css">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        #login{ 
+            border-radius: 15px;
+            width: 50px;
+            background-color: #fff;
+            border: 0.5px solid pink;
+            color:rgb(231, 114, 167);
+            font-size: 15px;
+        }
+        #login:hover{
+            background-color: rgba(236, 155, 211, 0.418);
+        }
+        #shadow {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            opacity: 0.4;
+            color: #fff;
+            background-color: rgb(195, 128, 195);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #box {
+            border-radius: 15px;
+            width: 300px;
+            height: 140px;
+            position: absolute;
+            top: 50%;
+            margin-top: -70px;
+            left: 50%;
+            margin-left: -150px;
+            padding: 15px;
+            border: 1px solid pink;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color:rgb(231, 114, 167);
+
+        }
+
+        .iconfont {
+            color: rgb(249, 204, 212);
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 20px;
+            margin: 1px;
+        }
+        .iconfont:hover{
+            color: red;
+        }
+
+        .btnbox {
+            text-align: center;
+            margin: 5px 0 5px 0;
+        }
+
+        .login {
+            border-radius: 15px;
+            width: 200px;
+            font-size: 15px;
+        }
+        #username,#password{
+            border-radius: 15px;
+            height: 20px;
+            margin: 5px;
+        }
+        .swal-button {
+            padding: 7px 19px;
+            border-radius: 2px;
+            background-color:rgb(247, 140, 188);
+            font-size: 12px;
+            border: 1px solid rgb(247, 140, 188);
+        }
+        .swal-overlay{
+            background-color:rgb(254, 133, 188, 0.1);
+        }
+        #agree{
+            margin: 5px;
+        }
+        .no-login {
+        background-color: #fff;
+        color: #cccacc;
+        cursor: not-allowed;
+        border-width: 0;
+        }
+        .right{
+            background-color: rgb(70, 186, 235);
+            border: 1px solid #d1cfcf;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="login">登录</button>
+    <div id="shadow" class="hidden">
+        <div id="box">
+            <span id="close"><i class="iconfont icon-guanbi"></i></span>
+            <div>用户:<input type="text" id="username" autocomplete="off"></div>
+            <div>密码:<input type="password" id="password"></div>
+            <div><input type="checkbox"  id="agree" onclick="changeAgree(this)">阅读并同意相关协议</div>
+            <div class="btnbox">
+                <button id="loginbtn"  class="login no-login">登录</button>
+            </div>
+            <div id="tips"></div>
+        </div>
+    </div>
+</body>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+    const loginEle = document.getElementById("login");
+    const shadowEle = document.getElementById("shadow")
+    const userEle = document.getElementById("username");
+    const pwdEle = document.getElementById("password");
+    const btnEle = document.getElementById("loginbtn");
+    const tipsEle = document.getElementById("tips");
+    const closeEle = document.getElementById("close");
+    let isValidUsername = false;
+    let isValidPassword = false;
+    let isagree = false;
+    btnEle.disabled = true;
+
+    function changeAgree(agreeEle){
+        isagree = agreeEle.checked;
+    }
+
+    loginEle.addEventListener("click", function () {
+        shadowEle.classList.remove("hidden")
+    })
+
+    userEle.addEventListener("keyup",function(){
+        if(!this.value){
+            isValidUsername = false;
+            btnEle.className = "login no-login"
+        }else{
+            isValidUsername = true;
+        }
+
+        if(isValidUsername && isValidPassword){
+            btnEle.className = "login right"
+            btnEle.disabled = false;
+        }else{
+            btnEle.disabled = true;
+        }
+    })
+    
+
+    pwdEle.addEventListener("keyup",function(){
+        if(!this.value){
+            isValidPassword = false;
+            btnEle.className = "login no-login"
+        }else{
+            isValidPassword = true;
+        }
+
+        if(isValidUsername && isValidPassword){
+            btnEle.className = "login right"
+            btnEle.disabled = false;
+        }else{
+            btnEle.disabled = true;
+        }
+    })
+
+    btnEle.addEventListener("click", () => {
+        if(!isagree){
+            swal ("请阅读并同意相关协议", "Something went wrong!" ,  "error" );
+            return;
+        }
+        let username = userEle.value;
+        let password = pwdEle.value;
+        btnEle.disabled = true;
+        btnEle.innerText = "登录中";
+        const xhr = new XMLHttpRequest();
+        xhr.open("post", "http://localhost:3000/login");
+        xhr.setRequestHeader(
+          'Content-type',
+          'application/x-www-form-urlencoded'
+        );
+        let postArgs = `username=${username}&password=${password}`;
+        xhr.send(postArgs);
+        xhr.onload = function () {
+            btnEle.disabled = false;
+            btnEle.innerText = "登录";
+            const resData = JSON.parse(this.responseText);
+            let { message, code } = resData;
+            if (code === 200) {
+                swal(message, "You clicked the button!", "success");
+                
+            } else {
+                swal (message, "Something went wrong!" ,  "error" );
+            }
+        }
+    })
+    closeEle.addEventListener("click", function () {
+        shadowEle.className = "hidden";
+    })
+</script>
+
+</html>
